@@ -1,7 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
-from json import JSONEncoder
 import os
 
 app = Flask(__name__)
@@ -24,12 +23,6 @@ class HolidayForChildren(db.Model):
         self.children_number = children_number
         self.age_category = age_category
 
-    def __str__(self):
-        return "{ price: " + str(self.price) \
-                + ",  duration: " + str(self.duration) \
-                + ",  children_number: " + str(self.children_number) \
-                + ",  age_category: " + str(self.age_category) + " }"
-
     def __del__(self):
         print("Destructor called")
 
@@ -40,7 +33,7 @@ class HolidaySchema(ma.Schema):
 
 
 holiday_schema = HolidaySchema()
-holiday_schema = HolidaySchema(many=True)
+holidays_schema = HolidaySchema(many=True)
 
 
 @app.route("/user", methods=["POST"])
@@ -60,14 +53,14 @@ def add_user():
 @app.route("/user", methods=["GET"])
 def get_holiday():
     all_animators = HolidayForChildren.query.all()
-    result = holiday_schema.dump(all_animators)
+    result = holidays_schema.dump(all_animators)
     return jsonify(result.data)
 
 
 @app.route("/user/<id>", methods=["GET"])
 def holiday_detail(id):
     holiday = HolidayForChildren.query.get(id)
-    return str(holiday)
+    return holiday_schema.jsonify(holiday)
 
 
 @app.route("/user/<id>", methods=["PUT"])
